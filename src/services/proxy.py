@@ -26,13 +26,16 @@ class ProxyList:
 
     def add(self, proxy_dict):
         """Adds a proxy onto the heap"""
-        if proxy_dict['ip'] not in self.used_proxies:
-            self.used_proxies.add(proxy_dict['ip'])
-            speed = float(proxy_dict['downloadSpeed'])
-            proxy_dict['downloadSpeed'] = speed
-            if speed >= 100:
-                self.n_fast_proxies += 1
-            heapq.heappush(self.proxies, (1 / speed + random.random() / 100000, proxy_dict))
+        try:
+            if proxy_dict['ip'] not in self.used_proxies:
+                self.used_proxies.add(proxy_dict['ip'])
+                speed = float(proxy_dict['downloadSpeed'])
+                proxy_dict['downloadSpeed'] = speed
+                if speed >= 100:
+                    self.n_fast_proxies += 1
+                heapq.heappush(self.proxies, (1 / speed + random.random() / 100000, proxy_dict))
+        except (KeyError, TypeError):
+            print('Error occurred, here are the keys of the error causing proxy: ', proxy_dict.keys())
 
     def _pop(self, ind=0):
         """Internal pop, only removes proxy from heap if the heap is longer than 1"""
@@ -65,10 +68,9 @@ class ProxyList:
 
 class ProxyServer(web.Server):
     """Proxy server - returns a random proxy on GET request filtered by provided params"""
-    def __init__(self, p_addr, api_addr):
+    def __init__(self, api_addr):
         super(ProxyServer, self).__init__(self.process_request)
         self.proxy_list = ProxyList()
-        self.proxy_address = p_addr
         self.api_server_url = 'http://{}:{}'.format(*api_addr)
 
     async def process_request(self, request):
@@ -100,7 +102,7 @@ class ProxyServer(web.Server):
 
     async def get_auth(self, session):
         """Gets API key from api server"""
-        async with session.get(self.api_server_url, params={'type': 'proxy'}) as raw:
+        async with session.get(self.api_server_url, params={'q': 'proxy'}) as raw:
             resp = await raw.text()
         return eval(resp)
 
@@ -126,17 +128,19 @@ class ProxyServer(web.Server):
     @staticmethod
     async def run(proxy_address, api_address, proxies_required=1000, concurrent_requests=10):
         """Main server running function - creates and runs proxy server asynchronously"""
-        server = ProxyServer(proxy_address, api_address)
+        server = ProxyServer(api_address)
         loop = asyncio.get_event_loop()
         await loop.create_server(server, *proxy_address)
         await server.fetch_proxies(proxies_required, concurrent_requests)
+        await server.shutdown()
+        loop.close()
 
 
 if __name__ == '__main__':
-    #pa = '192.168.0.100', 9999
-    pa = '127.0.0.1', 9999
-    #aa = '192.168.0.100', 1111
-    aa = '127.0.0.1', 1111
+    # pa = '127.0.0.1', 9999
+    # aa = '127.0.0.1', 1111
+    pa = '192.168.0.100', 9999
+    aa = '192.168.0.100', 1111
     p_required, c_requests = 1000, 10
     main_loop = asyncio.get_event_loop()
     main_loop.run_until_complete(ProxyServer.run(pa, aa, p_required, c_requests))

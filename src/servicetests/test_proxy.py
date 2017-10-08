@@ -136,7 +136,7 @@ class TestProxyServer(unittest.TestCase):
 
     @synchronous
     async def setUp(self):
-        self.server = ProxyServer(self.proxy_address, self.api_address)
+        self.server = ProxyServer(self.api_address)
         for _ in range(500):
             self.server.proxy_list.add(generate_random_proxy())
 
