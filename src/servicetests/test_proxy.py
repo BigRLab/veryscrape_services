@@ -30,8 +30,6 @@ class TestProxyList(unittest.TestCase):
             proxy = generate_random_proxy()
             addr = self.list.full_address(proxy)
             assert addr.startswith('http'), 'Did not return http proxy, {}'.format(addr)
-            if proxy['allowsHttps']:
-                assert addr.startswith('https'), 'Https proxy not correctly formatted, {}'.format(addr)
             assert addr.endswith('{}:{}'.format(proxy['ip'], proxy['port'])), \
                 'Proxy address not correctly formatted, {}'.format(addr)
 

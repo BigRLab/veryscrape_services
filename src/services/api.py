@@ -113,7 +113,7 @@ class APIServer(web.Server):
 
 
 if __name__ == '__main__':
-    aa = '127.0.0.1', 1111
-    # aa = '192.168.0.100', 1111
+    # aa = '127.0.0.1', 1111
+    aa = '192.168.0.100', 1111
     main_loop = asyncio.get_event_loop()
     main_loop.run_until_complete(APIServer.run(aa))

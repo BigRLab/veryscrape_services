@@ -21,8 +21,7 @@ class ProxyList:
     @staticmethod
     def full_address(proxy_dict):
         """Returns address string of provided proxy that is ready for use with aiohttp"""
-        http = 'https' if proxy_dict['allowsHttps'] else 'http'
-        return '{}://{}:{}'.format(http, proxy_dict['ip'], proxy_dict['port'])
+        return 'http://{}:{}'.format(proxy_dict['ip'], proxy_dict['port'])
 
     def add(self, proxy_dict):
         """Adds a proxy onto the heap"""
